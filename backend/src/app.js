@@ -8,9 +8,11 @@ import userRoutes from "./routes/users.routes.js";
 
 const app = express();
 const server = createServer(app);
-const io = connectToSocket(server);
 
-// ✅ ENV based PORT
+// ✅ Attach Socket.IO
+connectToSocket(server);
+
+// ✅ Railway provides PORT automatically
 const PORT = process.env.PORT || 8000;
 
 // ✅ Middlewares
@@ -22,13 +24,18 @@ app.use(cors({
 app.use(express.json({ limit: "40kb" }));
 app.use(express.urlencoded({ limit: "40kb", extended: true }));
 
+// ✅ Health check route (Railway 502 fix)
+app.get("/", (req, res) => {
+  res.status(200).send("Backend is running 🚀");
+});
+
+// ✅ API routes
 app.use("/api/v1/users", userRoutes);
 
 // ✅ Start server
-const start = async () => {
+const startServer = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI);
-
     console.log("✅ MongoDB Connected");
 
     server.listen(PORT, () => {
@@ -36,9 +43,9 @@ const start = async () => {
     });
 
   } catch (error) {
-    console.error("❌ MongoDB connection failed:", error.message);
+    console.error("❌ Server startup failed:", error.message);
     process.exit(1);
   }
 };
 
-start();
+startServer();
