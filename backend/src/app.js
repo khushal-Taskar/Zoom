@@ -13,7 +13,7 @@ const server = createServer(app);
 connectToSocket(server);
 
 // ✅ Railway provides PORT automatically
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 8080;
 
 // ✅ Middlewares
 app.use(cors({
