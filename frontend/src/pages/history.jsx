@@ -12,6 +12,7 @@ export default function History() {
     const [meetings, setMeetings] = useState([]);
     const routeTo = useNavigate();
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         const fetchHistory = async () => {
             try {

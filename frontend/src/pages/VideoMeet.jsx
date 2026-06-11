@@ -57,6 +57,7 @@ export default function VideoMeetComponent() {
 
   /* ===================== PERMISSIONS ===================== */
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     getPermissions();
   }, []);
@@ -85,6 +86,7 @@ export default function VideoMeetComponent() {
 
   /* ===================== MEDIA ===================== */
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (video !== undefined && audio !== undefined) {
       getUserMedia();
@@ -119,6 +121,7 @@ export default function VideoMeetComponent() {
 
   /* ===================== SCREEN SHARE ===================== */
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (screen) startScreenShare();
   }, [screen]);
