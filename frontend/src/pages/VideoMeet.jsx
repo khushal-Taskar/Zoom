@@ -305,18 +305,35 @@ export default function VideoMeetComponent() {
         <div className={styles.meetVideoContainer}>
 
           {/* Remote Videos */}
-          <div className={styles.conferenceView}>
-            {videos.map(v => (
+          {videos.length > 0 ? (
+            <div className={styles.conferenceView}>
+              {videos.map(v => (
+                <video
+                  key={v.socketId}
+                  ref={ref => ref && (ref.srcObject = v.stream)}
+                  autoPlay
+                />
+              ))}
+            </div>
+          ) : (
+            /* When alone — show self full-screen with a message */
+            <div className={styles.soloView}>
               <video
-                key={v.socketId}
-                ref={ref => ref && (ref.srcObject = v.stream)}
+                className={styles.soloVideo}
+                ref={localVideoref}
                 autoPlay
+                muted
               />
-            ))}
-          </div>
+              <div className={styles.waitingOverlay}>
+                <p>Waiting for others to join...</p>
+              </div>
+            </div>
+          )}
 
-          {/* Local Video (Picture-in-Picture) */}
-          <video className={styles.meetUserVideo} ref={localVideoref} autoPlay muted />
+          {/* Local Video (PiP) — only when others are present */}
+          {videos.length > 0 && (
+            <video className={styles.meetUserVideo} ref={localVideoref} autoPlay muted />
+          )}
 
           {/* Control Bar */}
           <div className={styles.buttonContainers}>
