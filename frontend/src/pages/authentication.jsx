@@ -1,175 +1,132 @@
-import * as React from 'react';
-import Avatar from '@mui/material/Avatar';
-import Button from '@mui/material/Button';
-import CssBaseline from '@mui/material/CssBaseline';
-import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
-import Link from '@mui/material/Link';
-import Paper from '@mui/material/Paper';
-import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import Typography from '@mui/material/Typography';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
+import React, { useState, useContext } from 'react';
+import "../App.css";
 import { AuthContext } from '../contexts/AuthContext';
-import { Snackbar } from '@mui/material';
-
-
-
-// TODO remove, this demo shouldn't need to reset the theme.
-
-const defaultTheme = createTheme();
 
 export default function Authentication() {
 
-    
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [name, setName] = useState('');
+    const [error, setError] = useState('');
+    const [message, setMessage] = useState('');
+    const [formState, setFormState] = useState(0); // 0 = Login, 1 = Register
+    const [loading, setLoading] = useState(false);
 
-    const [username, setUsername] = React.useState();
-    const [password, setPassword] = React.useState();
-    const [name, setName] = React.useState();
-    const [error, setError] = React.useState();
-    const [message, setMessage] = React.useState();
-
-
-    const [formState, setFormState] = React.useState(0);
-
-    const [open, setOpen] = React.useState(false)
-
-
-    const { handleRegister, handleLogin } = React.useContext(AuthContext);
+    const { handleRegister, handleLogin } = useContext(AuthContext);
 
     let handleAuth = async () => {
+        // Basic validation
+        if (!username || !password) {
+            setError("Please fill in all fields");
+            return;
+        }
+        if (formState === 1 && !name) {
+            setError("Please enter your full name");
+            return;
+        }
+
+        setLoading(true);
+        setError('');
+
         try {
             if (formState === 0) {
-
-                let result = await handleLogin(username, password)
-
-
+                await handleLogin(username, password);
             }
             if (formState === 1) {
                 let result = await handleRegister(name, username, password);
-                console.log(result);
-                setUsername("");
                 setMessage(result);
-                setOpen(true);
-                setError("")
-                setFormState(0)
-                setPassword("")
+                setUsername('');
+                setPassword('');
+                setError('');
+                setFormState(0);
             }
         } catch (err) {
-
             console.log(err);
-            let message = (err.response.data.message);
-            setError(message);
+            let msg = err.response?.data?.message || "Something went wrong";
+            setError(msg);
+        } finally {
+            setLoading(false);
         }
-    }
+    };
 
+    // Allow form submit with Enter key
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            handleAuth();
+        }
+    };
 
     return (
-        <ThemeProvider theme={defaultTheme}>
-            <Grid container component="main" sx={{ height: '100vh' }}>
-                <CssBaseline />
-                <Grid
-                    item
-                    xs={false}
-                    sm={4}
-                    md={7}
-                    sx={{
-                        backgroundImage: 'url(https://source.unsplash.com/random?wallpapers)',
-                        backgroundRepeat: 'no-repeat',
-                        backgroundColor: (t) =>
-                            t.palette.mode === 'light' ? t.palette.grey[50] : t.palette.grey[900],
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                    }}
-                />
-                <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
-                    <Box
-                        sx={{
-                            my: 8,
-                            mx: 4,
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                        }}
+        <div className="authPage">
+            <div className="authLeft">
+                <div className="brandSection">
+                    <h1>LinkUp</h1>
+                    <p>Connect with anyone, anywhere</p>
+                </div>
+
+                <div className="authCard">
+                    {/* Tab Switcher */}
+                    <div className="authTabs">
+                        <button
+                            className={`authTab ${formState === 0 ? 'active' : ''}`}
+                            onClick={() => { setFormState(0); setError(''); setMessage(''); }}
+                        >
+                            Sign In
+                        </button>
+                        <button
+                            className={`authTab ${formState === 1 ? 'active' : ''}`}
+                            onClick={() => { setFormState(1); setError(''); setMessage(''); }}
+                        >
+                            Sign Up
+                        </button>
+                    </div>
+
+                    {/* Full Name (only for Register) */}
+                    {formState === 1 && (
+                        <input
+                            className="authInput"
+                            type="text"
+                            placeholder="Full Name"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                        />
+                    )}
+
+                    {/* Username */}
+                    <input
+                        className="authInput"
+                        type="text"
+                        placeholder="Username"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                    />
+
+                    {/* Password */}
+                    <input
+                        className="authInput"
+                        type="password"
+                        placeholder="Password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                    />
+
+                    {/* Error / Success Messages */}
+                    {error && <p className="authError">{error}</p>}
+                    {message && <p className="authSuccess">{message}</p>}
+
+                    {/* Submit Button */}
+                    <button
+                        className="authButton"
+                        onClick={handleAuth}
+                        disabled={loading}
                     >
-                        <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-                            <LockOutlinedIcon />
-                        </Avatar>
-
-
-                        <div>
-                            <Button variant={formState === 0 ? "contained" : ""} onClick={() => { setFormState(0) }}>
-                                Sign In
-                            </Button>
-                            <Button variant={formState === 1 ? "contained" : ""} onClick={() => { setFormState(1) }}>
-                                Sign Up
-                            </Button>
-                        </div>
-
-                        <Box component="form" noValidate sx={{ mt: 1 }}>
-                            {formState === 1 ? <TextField
-                                margin="normal"
-                                required
-                                fullWidth
-                                id="username"
-                                label="Full Name"
-                                name="username"
-                                value={name}
-                                autoFocus
-                                onChange={(e) => setName(e.target.value)}
-                            /> : <></>}
-
-                            <TextField
-                                margin="normal"
-                                required
-                                fullWidth
-                                id="username"
-                                label="Username"
-                                name="username"
-                                value={username}
-                                autoFocus
-                                onChange={(e) => setUsername(e.target.value)}
-
-                            />
-                            <TextField
-                                margin="normal"
-                                required
-                                fullWidth
-                                name="password"
-                                label="Password"
-                                value={password}
-                                type="password"
-                                onChange={(e) => setPassword(e.target.value)}
-
-                                id="password"
-                            />
-
-                            <p style={{ color: "red" }}>{error}</p>
-
-                            <Button
-                                type="button"
-                                fullWidth
-                                variant="contained"
-                                sx={{ mt: 3, mb: 2 }}
-                                onClick={handleAuth}
-                            >
-                                {formState === 0 ? "Login " : "Register"}
-                            </Button>
-
-                        </Box>
-                    </Box>
-                </Grid>
-            </Grid>
-
-            <Snackbar
-
-                open={open}
-                autoHideDuration={4000}
-                message={message}
-            />
-
-        </ThemeProvider>
+                        {loading ? "Please wait..." : (formState === 0 ? "Login" : "Register")}
+                    </button>
+                </div>
+            </div>
+        </div>
     );
 }
